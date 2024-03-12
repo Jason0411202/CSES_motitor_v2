@@ -1,5 +1,5 @@
 # 指令
 '''
 docker build -t "cses_monitor_v2" .
-docker run --env-file .env -d docker_test1
+sudo docker run --env-file .env -d cses_monitor_v2
 '''
