@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from bs4 import BeautifulSoup
 import discord
 from discord.ext import commands
@@ -52,6 +53,9 @@ def Save_JSON_Data(SavedData):
         json.dump(SavedData, json_file, indent=4)
 
 def Get_UserName(userID):
+    if not userID.isdigit():
+        return "Not Found"
+
     url="https://cses.fi/user/" + userID
     response = requests.get(url)
 
@@ -61,6 +65,18 @@ def Get_UserName(userID):
     userName=h1_content.split(' ')[1]
 
     return userName
+
+def Get_Problem_AcceptedNumber(problemName):
+    url="https://cses.fi/problemset/list/"
+    response = requests.get(url)
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # 查找名称为 "Distinct Numbers" 的 <a> 标签
+    distinct_numbers_a = soup.find('a', string=problemName)
+    distinct_numbers_li = distinct_numbers_a.parent
+    detail_span = distinct_numbers_li.find('span', class_='detail')
+    return detail_span.get_text(strip=True)
 
 def Add_Database(userID):
         url = 'https://cses.fi/problemset/user/' + userID + '/'
@@ -125,8 +141,11 @@ async def Time_Check():
 
                 if newLen>oldLen: # 找出新增的那個 problems 名稱
                     newProblems=[x for x in newData['problems'] if x not in data['problems']]
+                    message="**[System]** " + newData['userName'] + " has accepted new problem: " + newProblems[0] + "\n"
+                    message = message + "difficulty: " + str(Get_Problem_AcceptedNumber(newProblems[0]))
+
                     channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-                    await channel.send('**[System]** ' + newData['userName'] + ' has accepted new problem: ' + newProblems[0])
+                    await channel.send(message)
     except:
         # 印出錯誤原因
         channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
@@ -139,10 +158,10 @@ async def on_ready(): #啟動成功時會呼叫
         channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID)) # 用頻道ID定位想要發送訊息的那個頻道
         await channel.send('**[System]** bot成功啟動!')
         await channel.send('進入稽查模式')
-    except:
+    except Exception as e:
         # 印出錯誤原因
         channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-        await channel.send(sys.exc_info()[0])
+        await channel.send(str(e))
 
     Time_Check.start() #每60秒在背景執行Codeforce_Time_Check函式
 
@@ -153,10 +172,14 @@ async def on_message(message): #有新的訊息便會呼叫
             return
         elif message.content[:12]=='System call ':
             commend=message.content[12:]
-            await message.channel.send(System_Commend(message,commend))
-    except:
+
+            sendMessage=System_Commend(message,commend)
+            print(sendMessage)
+            client._connection._messages.clear()
+            await message.channel.send(sendMessage)
+    except Exception as e:
         # 印出錯誤原因
-        channel = discord.utils.get(client.get_all_channels(), id=os.getenv('BOT_SEND_CHENNEL_ID'))
-        await channel.send(sys.exc_info()[0])
+        channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+        await channel.send(str(e))
 
 client.run(DISCORD_BOT_APIKEY) #啟動bot
