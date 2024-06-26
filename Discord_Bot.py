@@ -26,7 +26,7 @@ def System_Commend(message,commend):
     elif commend=='list':
         return ListAllUsers(commend)
     else:
-        return '查無此指令'
+        return '查無此指令 (  ･᷄ᯅ･᷅ )'
 
 
 ############ CSES part ############
