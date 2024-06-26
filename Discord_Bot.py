@@ -21,11 +21,15 @@ DISCORD_BOT_APIKEY=os.getenv('DISCORD_BOT_APIKEY')
 def System_Commend(message,commend):
     if re.search(r'add ',commend):
         return AddNewUser(commend.split(' ')[1])
+    elif re.search(r'addcf ',commend):
+        return AddNewUser_cf(commend.split(' ')[1])
     elif commend=='list':
         return ListAllUsers(commend)
     else:
         return '稽查程序出錯'
 
+
+############ CSES part ############
 def AddNewUser(userID):
     userName=Get_UserName(userID)
     Add_Database(userID)
@@ -36,7 +40,7 @@ def ListAllUsers(commend):
 
     loadData=Load_JSON_Data()
     for(i, data) in enumerate(loadData):
-            return_message+=data['userName'] + " has Acceped "+ str(len(data['problems'])) + " problems!\n"
+            return_message+= "勇者 " + data['userName'] + " 至今已成功攻略 "+ str(len(data['problems'])) + " 個 CSES 地下城!\n"
     
     return return_message
 
@@ -129,10 +133,9 @@ def Add_Database(userID):
 
         return newData
 
-@tasks.loop(seconds=60.0) #每60秒執行一次
+@tasks.loop(seconds=180.0) #每180秒執行一次
 async def Time_Check():
     try:
-        print('Time_Check')
         loadData=Load_JSON_Data()
         for(i, data) in enumerate(loadData):
                 oldLen=len(data['problems'])
@@ -141,8 +144,26 @@ async def Time_Check():
 
                 if newLen>oldLen: # 找出新增的那個 problems 名稱
                     newProblems=[x for x in newData['problems'] if x not in data['problems']]
-                    message="**[System]** " + newData['userName'] + " has accepted new problem: " + newProblems[0] + "\n"
-                    message = message + "difficulty: " + str(Get_Problem_AcceptedNumber(newProblems[0]))
+                    acceped_number=Get_Problem_AcceptedNumber(newProblems[0])
+                    # 102979 / 107828 分割出兩個數字
+                    acceped_number=acceped_number.split(' / ')
+
+                    message=""
+                    if int(acceped_number[0])<1000:
+                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的超高階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，只有極少數的 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                    elif int(acceped_number[0])<3000:
+                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的高階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，只有少數的 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                    elif int(acceped_number[0])<5000:
+                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的中階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                    elif int(acceped_number[0])<10000:
+                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的初階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                    else:
+                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的見習 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
 
                     channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
                     await channel.send(message)
@@ -150,6 +171,83 @@ async def Time_Check():
         # 印出錯誤原因
         channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
         await channel.send(sys.exc_info()[0])
+############ CSES part ############
+def AddNewUser_cf(userName):
+    Add_Database_cf(userName)
+    return "successfully add "+userName + "!"
+
+
+def Load_JSON_Data_cf():
+    if os.path.exists("database_cf.json") and os.path.getsize("./database_cf.json") > 0:
+        with open("database_cf.json", 'r') as json_file:
+            loadData = json.load(json_file)
+    else:
+        loadData=[]
+    return loadData
+
+def Save_JSON_Data_cf(SavedData):
+    with open("database_cf.json", 'w') as json_file:
+        json.dump(SavedData, json_file, indent=4)
+
+def Add_Database_cf(userName):
+    # 設置 API URL，這裡的 handle 是使用者的名字
+    url = f"https://codeforces.com/api/user.info?handles={userName}"
+    
+    # 發送 GET 請求
+    response = requests.get(url)
+    
+    # 解析回應的 JSON 資料
+    data = response.json()
+    
+    # 檢查是否成功取得資料
+    if data['status'] == 'OK':
+        user_info = data['result'][0]
+        rating = user_info.get('rating', 'No rating available')
+
+        # 寫入資料庫
+        loadData=Load_JSON_Data_cf()
+        flag=0
+        for(i, data) in enumerate(loadData): # 如果 userName 已經存在, 則更新其資料
+            if data['userName'] == userName:
+                loadData[i]['rating']=rating
+                flag+=1
+                break
+
+        if flag==0: # 如果 userName 不存在, 則新增一筆資料
+            newData = {
+            "userName": userName,
+            "rating": rating
+            }
+            loadData.append(newData)
+
+        Save_JSON_Data_cf(loadData)
+        return rating
+    else:
+        return -1
+
+
+
+@tasks.loop(seconds=180.0) #每180秒執行一次
+async def Time_Check_cf():
+    try:
+        loadData=Load_JSON_Data_cf()
+        for(i, data) in enumerate(loadData):
+            oldRating=data['rating']
+            newRating=Add_Database_cf(data['userName'])
+            if newRating!=-1 and newRating!=oldRating:
+                if newRating>oldRating:
+                    message="勇者 " + data['userName'] + " 展現了他無與倫比的勇氣和智慧，成功攻略了危險重重的地下城! 為了表揚其英勇事蹟，其積分從 " + str(oldRating) + " 上升至 " + str(newRating) + "，共提升了 " + str(newRating-oldRating) + " 分!"
+                else:
+                    message="勇者 " + data['userName'] + " 這次的地下城攻略行動並不順利，我們很遺憾的表示，該勇者的積分將從 " + str(oldRating) + " 下降至 " + str(newRating) + "，共下降了 " + str(oldRating-newRating) + " 分!"
+
+                channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+                await channel.send(message)
+            time.sleep(3)
+    except:
+        print(sys.exc_info()[0])
+
+############ CSES part ############
+
 
 
 @client.event
@@ -164,6 +262,7 @@ async def on_ready(): #啟動成功時會呼叫
         await channel.send(str(e))
 
     Time_Check.start() #每60秒在背景執行Codeforce_Time_Check函式
+    Time_Check_cf.start()
 
 @client.event
 async def on_message(message): #有新的訊息便會呼叫
