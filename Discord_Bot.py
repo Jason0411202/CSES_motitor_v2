@@ -242,7 +242,6 @@ async def Time_Check_cf():
 
                 channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
                 await channel.send(message)
-            time.sleep(3)
     except:
         print(sys.exc_info()[0])
 
