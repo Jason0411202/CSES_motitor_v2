@@ -32,6 +32,8 @@ def System_Commend(message,commend):
 ############ CSES part ############
 def AddNewUser(userID):
     userName=Get_UserName(userID)
+    if userName == "Not Found":
+        return "User not found!"
     Add_Database(userID)
     return "successfully add "+userName + "!"
 
