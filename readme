@@ -1,5 +1,5 @@
 # 指令
 '''
-docker build -t "cses_monitor_v2" .
-docker run --env-file .env -d cses_monitor_v2
+sudo docker build -t "cses_monitor_v2" .
+sudo docker run --restart=always --env-file .env -d cses_monitor_v2
 '''
