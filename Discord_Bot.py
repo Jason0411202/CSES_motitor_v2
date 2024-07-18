@@ -12,37 +12,60 @@ from dotenv import load_dotenv
 
 intents = discord.Intents.default() #intents 是要求的權限
 intents.message_content = True
-client = discord.Client(intents=intents) #client是與discord連結的橋樑
+
+bot = commands.Bot(command_prefix='!', intents=intents)
+
 load_dotenv()
 
 BOT_SEND_CHENNEL_ID=os.getenv('BOT_SEND_CHENNEL_ID')
 DISCORD_BOT_APIKEY=os.getenv('DISCORD_BOT_APIKEY')
 
-def System_Commend(message,commend):
-    if re.search(r'add ',commend):
-        return AddNewUser(commend.split(' ')[1])
-    elif re.search(r'addcf ',commend):
-        return AddNewUser_cf(commend.split(' ')[1])
-    elif commend=='list':
-        return ListAllUsers(commend)
-    else:
-        return '查無此指令 ಠ⁠ಗ⁠ಠ'
+@bot.slash_command(name="ping", description="測試指令")
+async def ping(ctx):
+    embed=discord.Embed(title="Pong!", description="目前機器人延遲為 " + str(round(bot.latency*1000)) + "ms", color=0x00ff00)
+    await ctx.respond(embed=embed)
+@bot.slash_command(name="help", description="列出所有指令")
+async def help(ctx):
+    # using Embed
+    embed=discord.Embed(title="指令列表", description="以下是所有指令的列表", color=0x00ff00)
+    embed.add_field(name="add [userID]", value="新增一位CSES使用者", inline=False)
+    embed.add_field(name="addcf [userName]", value="新增一位Codeforces使用者", inline=False)
+    embed.add_field(name="list", value="列出所有CSES使用者", inline=False)
+    embed.add_field(name="listcf", value="列出所有Codeforces使用者", inline=False)
+    embed.add_field(name="delete [userID]", value="刪除一位CSES使用者", inline=False)
+    embed.add_field(name="deletecf [userName]", value="刪除一位Codeforces使用者", inline=False)
+    embed.add_field(name="help", value="列出所有指令", inline=False)
+    embed.add_field(name="ping", value="測試指令", inline=False)
+    await ctx.respond(embed=embed)
 
+async def commnad_response(ctx, type, message):
+    if type == "Error":
+        embed=discord.Embed(title="Error", description=message, color=0xEA0000)
+    elif type == "Success":
+        embed=discord.Embed(title="Success", description=message, color=0x00EC00)
+    else:
+        embed=discord.Embed(title="Notify", description=message, color=0x0080FF)
+    await ctx.respond(embed=embed)
 
 ############ CSES part ############
-def AddNewUser(userID):
-    userName=Get_UserName(userID)
-    Add_Database(userID)
-    return "successfully add "+userName + "!"
+@bot.slash_command(name="add", description="新增一位CSES使用者")
+async def add(ctx, user_id: discord.Option(str)):
+    userName = Get_UserName(user_id)
+    ret = Add_Database(user_id)
+    if userName == "Not Found":
+        await commnad_response(ctx, "Error", "Failed to add " + user_id + " because the user does not exist!")
+    elif ret == False:
+        await commnad_response(ctx, "Error", "Failed to add " + user_id + " because the user does not exist!")
+    else:
+        await commnad_response(ctx, "Success", "successfully add "+userName + "!")
 
-def ListAllUsers(commend):
-    return_message=""
-
+@bot.slash_command(name="list", description="列出所有CSES使用者")
+async def list(ctx):
+    embed = discord.Embed(title="CSES冒險者列表", description="列出所有 CSES 使用者", color=0x0080FF)
     loadData=Load_JSON_Data()
     for(i, data) in enumerate(loadData):
-            return_message+= "勇者 " + data['userName'] + " 至今已成功攻略 "+ str(len(data['problems'])) + " 個 CSES 地下城!\n"
-    
-    return return_message
+        embed.add_field(name="勇者 " + data['userName'], value="成功攻略 "+ str(len(data['problems'])) + " 個 CSES 地下城", inline=True)
+    await ctx.respond(embed=embed)
 
 def Load_JSON_Data():
     if os.path.exists("database.json") and os.path.getsize("./database.json") > 0:
@@ -70,13 +93,27 @@ def Get_UserName(userID):
 
     return userName
 
+@bot.slash_command(name="delete", description="刪除一位CSES使用者")
+async def delete(ctx, user_id: discord.Option(str)):
+    loadData=Load_JSON_Data()
+    flag = 0
+    for(i, data) in enumerate(loadData):
+        if data['userID'] == user_id:
+            del loadData[i]
+            flag += 1
+            break
+    Save_JSON_Data(loadData)
+    if flag == 0:
+        await commnad_response(ctx, "Error", "Failed to delete " + user_id + " because the user does not exist!")
+    else:
+        await commnad_response(ctx, "Success", "successfully delete "+ user_id + "!")
+
 def Get_Problem_AcceptedNumber(problemName):
     url="https://cses.fi/problemset/list/"
     response = requests.get(url)
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # 查找名称为 "Distinct Numbers" 的 <a> 标签
     distinct_numbers_a = soup.find('a', string=problemName)
     distinct_numbers_li = distinct_numbers_a.parent
     detail_span = distinct_numbers_li.find('span', class_='detail')
@@ -108,7 +145,10 @@ def Add_Database(userID):
 
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # 找到所有 class 为 'task-score icon full' 的 <a> 元素，并提取它们的 title 属性
+        # if get 443, then return
+        if soup.find('h1').text == 'Not Found':
+            return False
+
         elements = soup.find_all('a', class_='task-score icon full')
         acceped_ProblemList = [element['title'] for element in elements]
 
@@ -150,32 +190,44 @@ async def Time_Check():
 
                     message=""
                     if int(acceped_number[0])<1000:
-                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的超高階 CSES 地下城 " + newProblems[0] + "\n"
+                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的超高階 CSES 地下城 " + newProblems[0] + "\n"
                         message = message + "截至目前為止，只有極少數的 " + acceped_number[0] + " 位勇者成功走到了最後!"
                     elif int(acceped_number[0])<3000:
-                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的高階 CSES 地下城 " + newProblems[0] + "\n"
+                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的高階 CSES 地下城 " + newProblems[0] + "\n"
                         message = message + "截至目前為止，只有少數的 " + acceped_number[0] + " 位勇者成功走到了最後!"
                     elif int(acceped_number[0])<5000:
-                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的中階 CSES 地下城 " + newProblems[0] + "\n"
+                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的中階 CSES 地下城 " + newProblems[0] + "\n"
                         message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
                     elif int(acceped_number[0])<10000:
-                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的初階 CSES 地下城 " + newProblems[0] + "\n"
+                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的初階 CSES 地下城 " + newProblems[0] + "\n"
                         message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
                     else:
-                        message="重要公告! 勇者 " + newData['userName'] + " 成功攻略了一座新的見習 CSES 地下城 " + newProblems[0] + "\n"
+                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的見習 CSES 地下城 " + newProblems[0] + "\n"
                         message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
 
-                    channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-                    await channel.send(message)
+                    channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+                    embed = discord.Embed(title="地下城攻略成功公告", description=message, color=0x00EC00)
+                    await channel.send(embed=embed)
     except:
         # 印出錯誤原因
-        channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+        channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
         await channel.send(sys.exc_info()[0])
-############ CSES part ############
-def AddNewUser_cf(userName):
-    Add_Database_cf(userName)
-    return "successfully add "+userName + "!"
+############ Codeforces part ############
+@bot.slash_command(name="addcf", description="新增一位Codeforces使用者")
+async def addcf(ctx, user_name: str):
+    ret = Add_Database_cf(user_name)
+    if ret == -1:
+        await commnad_response(ctx, "Error", "Failed to add " + user_name + " because the user does not exist!")
+    else:
+        await commnad_response(ctx, "Success", "successfully add "+ user_name + "!")
 
+@bot.slash_command(name="listcf", description="列出所有Codeforces使用者")
+async def listcf(ctx):
+    embed = discord.Embed(title="Codeforces冒險者列表", description="列出所有 Codeforces 使用者", color=0x0080FF)
+    loadData=Load_JSON_Data_cf()
+    for(i, data) in enumerate(loadData):
+        embed.add_field(name="勇者 " + data['userName'], value="積分為 "+ str(data['rating']), inline=True)
+    await ctx.respond(embed=embed)
 
 def Load_JSON_Data_cf():
     if os.path.exists("database_cf.json") and os.path.getsize("./database_cf.json") > 0:
@@ -188,6 +240,21 @@ def Load_JSON_Data_cf():
 def Save_JSON_Data_cf(SavedData):
     with open("database_cf.json", 'w') as json_file:
         json.dump(SavedData, json_file, indent=4)
+
+@bot.slash_command(name="deletecf", description="刪除一位Codeforces使用者")
+async def deletecf(ctx, user_name: discord.Option(str)):
+    loadData=Load_JSON_Data_cf()
+    flag = 0
+    for(i, data) in enumerate(loadData):
+        if data['userName'] == user_name:
+            del loadData[i]
+            flag += 1
+            break
+    Save_JSON_Data_cf(loadData)
+    if flag == 0:
+        await commnad_response(ctx, "Error", "Failed to delete " + user_name + " because the user does not exist!")
+    else:
+        await commnad_response(ctx, "Success", "successfully delete "+ user_name + "!")
 
 def Add_Database_cf(userName):
     # 設置 API URL，這裡的 handle 是使用者的名字
@@ -235,49 +302,41 @@ async def Time_Check_cf():
             oldRating=data['rating']
             newRating=Add_Database_cf(data['userName'])
             if newRating!=-1 and newRating!=oldRating:
+                
                 if newRating>oldRating:
                     message="勇者 " + data['userName'] + " 展現了他無與倫比的勇氣和智慧，成功攻略了危險重重的地下城! 為了表揚其英勇事蹟，其積分從 " + str(oldRating) + " 上升至 " + str(newRating) + "，共提升了 " + str(newRating-oldRating) + " 分!"
+                    embed = discord.Embed(title="Codeforces地下城公告", description=message, color=0x00EC00)
                 else:
                     message="勇者 " + data['userName'] + " 這次的地下城攻略行動並不順利，我們很遺憾的表示，該勇者的積分將從 " + str(oldRating) + " 下降至 " + str(newRating) + "，共下降了 " + str(oldRating-newRating) + " 分!"
-
-                channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-                await channel.send(message)
+                    embed = discord.Embed(title="Codeforces地下城公告", description=message, color=0xEA0000)
+                channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+                await channel.send(embed=embed)
     except:
         print(sys.exc_info()[0])
 
-############ CSES part ############
+############ Codeforces part ############
 
-
-
-@client.event
+@bot.event
 async def on_ready(): #啟動成功時會呼叫
     try:
-        channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID)) # 用頻道ID定位想要發送訊息的那個頻道
-        await channel.send('**[System]** bot成功啟動!')
-        await channel.send('進入稽查模式')
+        channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID)) # 用頻道ID定位想要發送訊息的那個頻道
+        embed = discord.Embed(title="[System]", description="bot成功啟動!", color=0x00EC00)
+        embed.add_field(name="指令前綴", value="/", inline=False)
+        await channel.send(embed=embed)
     except Exception as e:
         # 印出錯誤原因
-        channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-        await channel.send(str(e))
+        channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+        embed = discord.Embed(title="Error", description=sys.exc_info()[0], color=0xEA0000)
+        await channel.send(embed=embed)
 
     Time_Check.start() #每60秒在背景執行Codeforce_Time_Check函式
     Time_Check_cf.start()
 
-@client.event
+@bot.event
 async def on_message(message): #有新的訊息便會呼叫
-    try:
-        if message.author == client.user: #若新訊息是bot本身則忽略
-            return
-        elif message.content[:12]=='System call ':
-            commend=message.content[12:]
+    if message.author == bot.user:
+        return
+    elif "Sys call" in message.content:
+        await message.channel.send("現在改用斜線指令瞜，請用 `/` 作為指令前綴!")
 
-            sendMessage=System_Commend(message,commend)
-            print(sendMessage)
-            client._connection._messages.clear()
-            await message.channel.send(sendMessage)
-    except Exception as e:
-        # 印出錯誤原因
-        channel = discord.utils.get(client.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-        await channel.send(str(e))
-
-client.run(DISCORD_BOT_APIKEY) #啟動bot
+bot.run(DISCORD_BOT_APIKEY) #啟動bot
