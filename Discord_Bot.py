@@ -25,7 +25,7 @@ async def ping(ctx):
 async def help(ctx):
     # using Embed
     embed=discord.Embed(title="指令列表", description="以下是所有互動方式的列表", color=0x00ff00)
-    embed.add_field(name="add [userID]", value="新增一位CSES使用者", inline=False)
+    embed.add_field(name="add [userID]", value="註冊一位新的 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="addcf [userName]", value="新增一位Codeforces使用者", inline=False)
     embed.add_field(name="list", value="列出所有CSES使用者", inline=False)
     embed.add_field(name="listcf", value="列出所有Codeforces使用者", inline=False)
@@ -45,16 +45,16 @@ async def commnad_response(ctx, type, message):
     await ctx.respond(embed=embed)
 
 ############ CSES part ############
-@bot.slash_command(name="add", description="新增一位CSES使用者")
+@bot.slash_command(name="add", description="註冊一位新的 CSES 地下城挑戰者")
 async def add(ctx, user_id: discord.Option(str)):
     userName = Get_UserName(user_id)
     ret = Add_Database(user_id)
     if userName == "Not Found":
-        await commnad_response(ctx, "Error", "Failed to add " + user_id + " because the user does not exist!")
+        await commnad_response(ctx, "Error", "註冊失敗! " + user_id + " 不存在")
     elif ret == False:
-        await commnad_response(ctx, "Error", "Failed to add " + user_id + " because the user does not exist!")
+        await commnad_response(ctx, "Error", "註冊失敗! " + user_id + " 不存在")
     else:
-        await commnad_response(ctx, "Success", "successfully add "+userName + "!")
+        await commnad_response(ctx, "Success", "成功註冊挑戰者 "+userName + " !")
 
 @bot.slash_command(name="list", description="列出所有CSES使用者")
 async def list(ctx):
