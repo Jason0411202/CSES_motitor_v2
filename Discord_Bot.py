@@ -1,14 +1,11 @@
 import os
 import sys
-import time
 from bs4 import BeautifulSoup
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-import re
 import json
 import requests
-from dotenv import load_dotenv
 
 intents = discord.Intents.default() #intents 是要求的權限
 intents.message_content = True
@@ -19,21 +16,22 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 BOT_SEND_CHENNELS_ID=""
 DISCORD_BOT_APIKEY=""
 
-@bot.slash_command(name="ping", description="測試指令")
+@bot.slash_command(name="ping", description="與神鷹教・對 bug 特別作戰部隊總部前台互動")
 async def ping(ctx):
-    embed=discord.Embed(title="Pong!", description="目前機器人延遲為 " + str(round(bot.latency*1000)) + "ms", color=0x00ff00)
+    embed=discord.Embed(title="Pong!", description="您好，偉大的戰士，有什麼是我可以幫助您的嗎?", color=0x00ff00)
+    embed.add_field(name="回應時間: ", value=str(round(bot.latency*1000)) + "ms", inline=False)
     await ctx.respond(embed=embed)
-@bot.slash_command(name="help", description="列出所有指令")
+@bot.slash_command(name="help", description="列出所有互動方式")
 async def help(ctx):
     # using Embed
-    embed=discord.Embed(title="指令列表", description="以下是所有指令的列表", color=0x00ff00)
+    embed=discord.Embed(title="指令列表", description="以下是所有互動方式的列表", color=0x00ff00)
     embed.add_field(name="add [userID]", value="新增一位CSES使用者", inline=False)
     embed.add_field(name="addcf [userName]", value="新增一位Codeforces使用者", inline=False)
     embed.add_field(name="list", value="列出所有CSES使用者", inline=False)
     embed.add_field(name="listcf", value="列出所有Codeforces使用者", inline=False)
     embed.add_field(name="delete [userID]", value="刪除一位CSES使用者", inline=False)
     embed.add_field(name="deletecf [userName]", value="刪除一位Codeforces使用者", inline=False)
-    embed.add_field(name="help", value="列出所有指令", inline=False)
+    embed.add_field(name="help", value="列出所有互動方式", inline=False)
     embed.add_field(name="ping", value="測試指令", inline=False)
     await ctx.respond(embed=embed)
 
