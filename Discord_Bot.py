@@ -322,7 +322,7 @@ async def on_ready(): #啟動成功時會呼叫
     try:
         for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
             channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID)) # 用頻道ID定位想要發送訊息的那個頻道
-            embed = discord.Embed(title="「神鷹教・對 bug 特別作戰部隊」總部公告", description="通訊系統曾短暫受到 bug 攻擊干擾，現已恢復正常運作", color=0x00EC00)
+            embed = discord.Embed(title="「神鷹教・對 bug 特別作戰部隊」總部公告", description="通訊系統短暫受到 bug 攻擊干擾，現已恢復正常運作", color=0x00EC00)
             embed.add_field(name="指令前綴", value="/", inline=False)
             await channel.send(embed=embed)
     except Exception as e:
