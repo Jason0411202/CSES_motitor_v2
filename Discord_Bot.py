@@ -303,11 +303,11 @@ async def Time_Check_cf():
             if newRating!=-1 and newRating!=oldRating:
                 
                 if newRating>oldRating:
-                    message="勇者 " + data['userName'] + " 展現了他無與倫比的勇氣和智慧，成功攻略了危險重重的地下城! 為了表揚其英勇事蹟，其積分從 " + str(oldRating) + " 上升至 " + str(newRating) + "，共提升了 " + str(newRating-oldRating) + " 分!"
-                    embed = discord.Embed(title="Codeforces地下城公告", description=message, color=0x00EC00)
+                    message="隊員 " + data['userName'] + " 展現了他無與倫比的勇氣和智慧，成功擊退了凶險的 bug 入侵! 該隊員的戰力從 " + str(oldRating) + " 上升至 " + str(newRating) + "，共提升了 " + str(newRating-oldRating) + " 分!"
+                    embed = discord.Embed(title="「神鷹教・對 bug 特別作戰部隊」 戰報", description=message, color=0x00EC00)
                 else:
-                    message="勇者 " + data['userName'] + " 這次的地下城攻略行動並不順利，我們很遺憾的表示，該勇者的積分將從 " + str(oldRating) + " 下降至 " + str(newRating) + "，共下降了 " + str(oldRating-newRating) + " 分!"
-                    embed = discord.Embed(title="Codeforces地下城公告", description=message, color=0xEA0000)
+                    message="隊員 " + data['userName'] + " 在凶險的 bug 入侵中受了重傷，我們很遺憾的表示，該隊員的戰力從 " + str(oldRating) + " 下降至 " + str(newRating) + "，共下降了 " + str(oldRating-newRating) + " 分!"
+                    embed = discord.Embed(title="「神鷹教・對 bug 特別作戰部隊」 戰報", description=message, color=0xEA0000)
 
                 for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
                     channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
