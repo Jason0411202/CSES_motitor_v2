@@ -187,20 +187,20 @@ async def Time_Check():
 
                     message=""
                     if int(acceped_number[0])<1000:
-                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的超高階 CSES 地下城 " + newProblems[0] + "\n"
-                        message = message + "截至目前為止，只有極少數的 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                        message="挑戰者 " + newData['userName'] + " 成功攻略了一座新的超高階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，只有極少數的 " + acceped_number[0] + " 位挑戰者成功走到了最後!"
                     elif int(acceped_number[0])<3000:
-                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的高階 CSES 地下城 " + newProblems[0] + "\n"
-                        message = message + "截至目前為止，只有少數的 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                        message="挑戰者 " + newData['userName'] + " 成功攻略了一座新的高階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，只有少數的 " + acceped_number[0] + " 位挑戰者成功走到了最後!"
                     elif int(acceped_number[0])<5000:
-                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的中階 CSES 地下城 " + newProblems[0] + "\n"
-                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                        message="挑戰者 " + newData['userName'] + " 成功攻略了一座新的中階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位挑戰者成功走到了最後!"
                     elif int(acceped_number[0])<10000:
-                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的初階 CSES 地下城 " + newProblems[0] + "\n"
-                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                        message="挑戰者 " + newData['userName'] + " 成功攻略了一座新的初階 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位挑戰者成功走到了最後!"
                     else:
-                        message="勇者 " + newData['userName'] + " 成功攻略了一座新的見習 CSES 地下城 " + newProblems[0] + "\n"
-                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
+                        message="挑戰者 " + newData['userName'] + " 成功攻略了一座新的見習 CSES 地下城 " + newProblems[0] + "\n"
+                        message = message + "截至目前為止，共有 " + acceped_number[0] + " 位挑戰者成功走到了最後!"
 
                     for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
                         channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
