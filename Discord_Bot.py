@@ -30,7 +30,7 @@ async def help(ctx):
     embed.add_field(name="list", value="列出所有 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="listcf", value="列出所有「神鷹教・對 bug 特別作戰部隊」隊員", inline=False)
     embed.add_field(name="delete [userID]", value="註銷一位 CSES 地下城挑戰者", inline=False)
-    embed.add_field(name="deletecf [userName]", value="刪除一位Codeforces使用者", inline=False)
+    embed.add_field(name="deletecf [userName]", value="註銷一位「神鷹教・對 bug 特別作戰部隊」隊員", inline=False)
     embed.add_field(name="help", value="列出所有互動方式", inline=False)
     embed.add_field(name="ping", value="測試指令", inline=False)
     await ctx.respond(embed=embed)
@@ -101,7 +101,7 @@ async def delete(ctx, user_id: discord.Option(str)):
             break
     Save_JSON_Data(loadData)
     if flag == 0:
-        await commnad_response(ctx, "Error", "註銷失敗!  " + user_id + " 不存在")
+        await commnad_response(ctx, "Error", "註銷失敗! " + user_id + " 不存在")
     else:
         await commnad_response(ctx, "Success", "成功註銷挑戰者 "+ user_id + " !")
 
@@ -240,7 +240,7 @@ def Save_JSON_Data_cf(SavedData):
     with open("database_cf.json", 'w') as json_file:
         json.dump(SavedData, json_file, indent=4)
 
-@bot.slash_command(name="deletecf", description="刪除一位Codeforces使用者")
+@bot.slash_command(name="deletecf", description="註銷一位「神鷹教・對 bug 特別作戰部隊」隊員")
 async def deletecf(ctx, user_name: discord.Option(str)):
     loadData=Load_JSON_Data_cf()
     flag = 0
@@ -251,9 +251,9 @@ async def deletecf(ctx, user_name: discord.Option(str)):
             break
     Save_JSON_Data_cf(loadData)
     if flag == 0:
-        await commnad_response(ctx, "Error", "Failed to delete " + user_name + " because the user does not exist!")
+        await commnad_response(ctx, "Error", "註銷失敗! " + user_name + " 不存在")
     else:
-        await commnad_response(ctx, "Success", "successfully delete "+ user_name + "!")
+        await commnad_response(ctx, "Success", "成功註銷隊員 "+ user_name + "! 願大雉王永遠伴你左右")
 
 def Add_Database_cf(userName):
     # 設置 API URL，這裡的 handle 是使用者的名字
