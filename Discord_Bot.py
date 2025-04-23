@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 BOT_SEND_CHENNELS_ID=""
 DISCORD_BOT_APIKEY=""
 
-@bot.slash_command(name="ping", description="與神鷹教・對 bug 特別作戰部隊總部前台互動")
+@bot.slash_command(name="ping", description="與「神鷹教・對 bug 特別作戰部隊」總部前台互動")
 async def ping(ctx):
     embed=discord.Embed(title="Pong!", description="您好，偉大的戰士，有什麼是我可以幫助您的嗎?", color=0x00ff00)
     embed.add_field(name="回應時間: ", value=str(round(bot.latency*1000)) + "ms", inline=False)
@@ -26,7 +26,7 @@ async def help(ctx):
     # using Embed
     embed=discord.Embed(title="指令列表", description="以下是所有互動方式的列表", color=0x00ff00)
     embed.add_field(name="add [userID]", value="註冊一位新的 CSES 地下城挑戰者", inline=False)
-    embed.add_field(name="addcf [userName]", value="新增一位Codeforces使用者", inline=False)
+    embed.add_field(name="addcf [userName]", value="註冊一位「神鷹教・對 bug 特別作戰部隊」隊員", inline=False)
     embed.add_field(name="list", value="列出所有 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="listcf", value="列出所有Codeforces使用者", inline=False)
     embed.add_field(name="delete [userID]", value="註銷一位 CSES 地下城挑戰者", inline=False)
@@ -212,13 +212,13 @@ async def Time_Check():
             channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
             await channel.send(sys.exc_info()[0])
 ############ Codeforces part ############
-@bot.slash_command(name="addcf", description="新增一位Codeforces使用者")
+@bot.slash_command(name="addcf", description="註冊一位「神鷹教・對 bug 特別作戰部隊」隊員")
 async def addcf(ctx, user_name: str):
     ret = Add_Database_cf(user_name)
     if ret == -1:
-        await commnad_response(ctx, "Error", "Failed to add " + user_name + " because the user does not exist!")
+        await commnad_response(ctx, "Error", "註冊失敗! " + user_name + " 不存在")
     else:
-        await commnad_response(ctx, "Success", "successfully add "+ user_name + "!")
+        await commnad_response(ctx, "Success", "成功註冊隊員 "+ user_name + "! 為大雉王獻上你的一切吧 !")
 
 @bot.slash_command(name="listcf", description="列出所有Codeforces使用者")
 async def listcf(ctx):
