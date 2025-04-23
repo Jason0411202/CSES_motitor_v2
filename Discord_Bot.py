@@ -322,14 +322,15 @@ async def on_ready(): #啟動成功時會呼叫
     try:
         for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
             channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID)) # 用頻道ID定位想要發送訊息的那個頻道
-            embed = discord.Embed(title="[System]", description="bot成功啟動!", color=0x00EC00)
+            embed = discord.Embed(title="「神鷹教・對 bug 特別作戰部隊」總部公告", description="通訊系統曾短暫受到 bug 攻擊干擾，現已恢復正常運作", color=0x00EC00)
             embed.add_field(name="指令前綴", value="/", inline=False)
             await channel.send(embed=embed)
     except Exception as e:
         # 印出錯誤原因
         for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
             channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-            embed = discord.Embed(title="Error", description=sys.exc_info()[0], color=0xEA0000)
+            embed = discord.Embed(title="「神鷹教・對 bug 特別作戰部隊」總部公告", description="緊急狀況! 通訊系統受到攻擊，出現異常!", color=0x00EC00)
+            embed.add_field(name="Error: ", value=sys.exc_info()[0], inline=False)
             await channel.send(embed=embed)
 
     Time_Check.start() #每60秒在背景執行Codeforce_Time_Check函式
