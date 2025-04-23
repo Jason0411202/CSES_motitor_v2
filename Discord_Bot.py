@@ -27,7 +27,7 @@ async def help(ctx):
     embed=discord.Embed(title="指令列表", description="以下是所有互動方式的列表", color=0x00ff00)
     embed.add_field(name="add [userID]", value="註冊一位新的 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="addcf [userName]", value="新增一位Codeforces使用者", inline=False)
-    embed.add_field(name="list", value="列出所有CSES使用者", inline=False)
+    embed.add_field(name="list", value="列出所有 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="listcf", value="列出所有Codeforces使用者", inline=False)
     embed.add_field(name="delete [userID]", value="刪除一位CSES使用者", inline=False)
     embed.add_field(name="deletecf [userName]", value="刪除一位Codeforces使用者", inline=False)
@@ -56,12 +56,12 @@ async def add(ctx, user_id: discord.Option(str)):
     else:
         await commnad_response(ctx, "Success", "成功註冊挑戰者 "+userName + " !")
 
-@bot.slash_command(name="list", description="列出所有CSES使用者")
+@bot.slash_command(name="list", description="列出所有 CSES 地下城挑戰者")
 async def list(ctx):
-    embed = discord.Embed(title="CSES冒險者列表", description="列出所有 CSES 使用者", color=0x0080FF)
+    embed = discord.Embed(title="CSES 地下城挑戰者列表", description="列出所有 CSES 地下城挑戰者", color=0x0080FF)
     loadData=Load_JSON_Data()
     for(i, data) in enumerate(loadData):
-        embed.add_field(name="勇者 " + data['userName'], value="成功攻略 "+ str(len(data['problems'])) + " 個 CSES 地下城", inline=True)
+        embed.add_field(name="挑戰者 " + data['userName'], value="成功攻略 "+ str(len(data['problems'])) + " 個 CSES 地下城", inline=True)
     await ctx.respond(embed=embed)
 
 def Load_JSON_Data():
