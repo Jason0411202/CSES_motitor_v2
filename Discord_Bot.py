@@ -28,7 +28,7 @@ async def help(ctx):
     embed.add_field(name="add [userID]", value="註冊一位新的 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="addcf [userName]", value="註冊一位「神鷹教・對 bug 特別作戰部隊」隊員", inline=False)
     embed.add_field(name="list", value="列出所有 CSES 地下城挑戰者", inline=False)
-    embed.add_field(name="listcf", value="列出所有Codeforces使用者", inline=False)
+    embed.add_field(name="listcf", value="列出所有「神鷹教・對 bug 特別作戰部隊」隊員", inline=False)
     embed.add_field(name="delete [userID]", value="註銷一位 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="deletecf [userName]", value="刪除一位Codeforces使用者", inline=False)
     embed.add_field(name="help", value="列出所有互動方式", inline=False)
@@ -220,12 +220,12 @@ async def addcf(ctx, user_name: str):
     else:
         await commnad_response(ctx, "Success", "成功註冊隊員 "+ user_name + "! 為大雉王獻上你的一切吧 !")
 
-@bot.slash_command(name="listcf", description="列出所有Codeforces使用者")
+@bot.slash_command(name="listcf", description="列出所有「神鷹教・對 bug 特別作戰部隊」隊員")
 async def listcf(ctx):
-    embed = discord.Embed(title="Codeforces冒險者列表", description="列出所有 Codeforces 使用者", color=0x0080FF)
+    embed = discord.Embed(title="「神鷹教・對 bug 特別作戰部隊」隊員列表", description="列出所有「神鷹教・對 bug 特別作戰部隊」隊員", color=0x0080FF)
     loadData=Load_JSON_Data_cf()
     for(i, data) in enumerate(loadData):
-        embed.add_field(name="勇者 " + data['userName'], value="積分為 "+ str(data['rating']), inline=True)
+        embed.add_field(name="隊員 " + data['userName'], value="戰力為 "+ str(data['rating']), inline=True)
     await ctx.respond(embed=embed)
 
 def Load_JSON_Data_cf():
