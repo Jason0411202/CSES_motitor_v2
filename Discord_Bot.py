@@ -15,10 +15,9 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-load_dotenv()
 
-BOT_SEND_CHENNEL_ID=os.getenv('BOT_SEND_CHENNEL_ID')
-DISCORD_BOT_APIKEY=os.getenv('DISCORD_BOT_APIKEY')
+BOT_SEND_CHENNELS_ID=""
+DISCORD_BOT_APIKEY=""
 
 @bot.slash_command(name="ping", description="測試指令")
 async def ping(ctx):
@@ -205,13 +204,15 @@ async def Time_Check():
                         message="勇者 " + newData['userName'] + " 成功攻略了一座新的見習 CSES 地下城 " + newProblems[0] + "\n"
                         message = message + "截至目前為止，共有 " + acceped_number[0] + " 位勇者成功走到了最後!"
 
-                    channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-                    embed = discord.Embed(title="地下城攻略成功公告", description=message, color=0x00EC00)
-                    await channel.send(embed=embed)
+                    for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
+                        channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+                        embed = discord.Embed(title="地下城攻略成功公告", description=message, color=0x00EC00)
+                        await channel.send(embed=embed)
     except:
         # 印出錯誤原因
-        channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-        await channel.send(sys.exc_info()[0])
+        for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
+            channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+            await channel.send(sys.exc_info()[0])
 ############ Codeforces part ############
 @bot.slash_command(name="addcf", description="新增一位Codeforces使用者")
 async def addcf(ctx, user_name: str):
@@ -309,8 +310,10 @@ async def Time_Check_cf():
                 else:
                     message="勇者 " + data['userName'] + " 這次的地下城攻略行動並不順利，我們很遺憾的表示，該勇者的積分將從 " + str(oldRating) + " 下降至 " + str(newRating) + "，共下降了 " + str(oldRating-newRating) + " 分!"
                     embed = discord.Embed(title="Codeforces地下城公告", description=message, color=0xEA0000)
-                channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-                await channel.send(embed=embed)
+
+                for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
+                    channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+                    await channel.send(embed=embed)
     except:
         print(sys.exc_info()[0])
 
@@ -319,15 +322,17 @@ async def Time_Check_cf():
 @bot.event
 async def on_ready(): #啟動成功時會呼叫
     try:
-        channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID)) # 用頻道ID定位想要發送訊息的那個頻道
-        embed = discord.Embed(title="[System]", description="bot成功啟動!", color=0x00EC00)
-        embed.add_field(name="指令前綴", value="/", inline=False)
-        await channel.send(embed=embed)
+        for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
+            channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID)) # 用頻道ID定位想要發送訊息的那個頻道
+            embed = discord.Embed(title="[System]", description="bot成功啟動!", color=0x00EC00)
+            embed.add_field(name="指令前綴", value="/", inline=False)
+            await channel.send(embed=embed)
     except Exception as e:
         # 印出錯誤原因
-        channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
-        embed = discord.Embed(title="Error", description=sys.exc_info()[0], color=0xEA0000)
-        await channel.send(embed=embed)
+        for BOT_SEND_CHENNEL_ID in BOT_SEND_CHENNELS_ID:
+            channel = discord.utils.get(bot.get_all_channels(), id=int(BOT_SEND_CHENNEL_ID))
+            embed = discord.Embed(title="Error", description=sys.exc_info()[0], color=0xEA0000)
+            await channel.send(embed=embed)
 
     Time_Check.start() #每60秒在背景執行Codeforce_Time_Check函式
     Time_Check_cf.start()
@@ -339,4 +344,18 @@ async def on_message(message): #有新的訊息便會呼叫
     elif "Sys call" in message.content:
         await message.channel.send("現在改用斜線指令瞜，請用 `/` 作為指令前綴!")
 
-bot.run(DISCORD_BOT_APIKEY) #啟動bot
+
+if __name__ == "__main__":
+    try:
+        with open("env.json") as f:
+            envDict = json.load(f)
+            BOT_SEND_CHENNELS_ID = envDict["BOT_SEND_CHENNELS_ID"]
+            DISCORD_BOT_APIKEY = envDict["DISCORD_BOT_APIKEY"]
+            if(len(BOT_SEND_CHENNELS_ID)==0 or DISCORD_BOT_APIKEY==""):
+                print("env.json 設定錯誤，請依照 Readme 指示填入")
+                sys.exit(1)
+    except FileNotFoundError:
+        print("env.json檔案不存在, 請在與 Discord_Bot.py 的相同資料夾下建立 env.json 檔案，並依照 Readme 指示填入")
+        sys.exit(1)
+    
+    bot.run(DISCORD_BOT_APIKEY) #啟動bot
