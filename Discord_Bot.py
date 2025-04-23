@@ -29,7 +29,7 @@ async def help(ctx):
     embed.add_field(name="addcf [userName]", value="新增一位Codeforces使用者", inline=False)
     embed.add_field(name="list", value="列出所有 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="listcf", value="列出所有Codeforces使用者", inline=False)
-    embed.add_field(name="delete [userID]", value="刪除一位CSES使用者", inline=False)
+    embed.add_field(name="delete [userID]", value="註銷一位 CSES 地下城挑戰者", inline=False)
     embed.add_field(name="deletecf [userName]", value="刪除一位Codeforces使用者", inline=False)
     embed.add_field(name="help", value="列出所有互動方式", inline=False)
     embed.add_field(name="ping", value="測試指令", inline=False)
@@ -90,7 +90,7 @@ def Get_UserName(userID):
 
     return userName
 
-@bot.slash_command(name="delete", description="刪除一位CSES使用者")
+@bot.slash_command(name="delete", description="註銷一位 CSES 地下城挑戰者")
 async def delete(ctx, user_id: discord.Option(str)):
     loadData=Load_JSON_Data()
     flag = 0
@@ -101,9 +101,9 @@ async def delete(ctx, user_id: discord.Option(str)):
             break
     Save_JSON_Data(loadData)
     if flag == 0:
-        await commnad_response(ctx, "Error", "Failed to delete " + user_id + " because the user does not exist!")
+        await commnad_response(ctx, "Error", "註銷失敗!  " + user_id + " 不存在")
     else:
-        await commnad_response(ctx, "Success", "successfully delete "+ user_id + "!")
+        await commnad_response(ctx, "Success", "成功註銷挑戰者 "+ user_id + " !")
 
 def Get_Problem_AcceptedNumber(problemName):
     url="https://cses.fi/problemset/list/"
